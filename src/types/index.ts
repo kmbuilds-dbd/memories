@@ -86,3 +86,12 @@ export interface MemoryPage {
   memories: MemoryPreview[];
   nextCursor: string | null;
 }
+
+export interface MemoryFilters {
+  query?: string;
+  tagId?: string;
+}
+
+export interface TagWithCount extends Tag {
+  memory_count: number;
+}

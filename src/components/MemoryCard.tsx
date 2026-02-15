@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,9 +9,34 @@ import type { MemoryPreview } from "@/types";
 
 interface MemoryCardProps {
   memory: MemoryPreview;
+  highlightQuery?: string;
 }
 
-export function MemoryCard({ memory }: MemoryCardProps) {
+function highlightText(text: string, query?: string) {
+  if (!query) return text;
+
+  const words = query
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  if (words.length === 0) return text;
+
+  const regex = new RegExp(`(${words.join("|")})`, "gi");
+  const parts = text.split(regex);
+
+  return parts.map((part, i) =>
+    regex.test(part) ? (
+      <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 rounded-sm px-0.5">
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+  );
+}
+
+export function MemoryCard({ memory, highlightQuery }: MemoryCardProps) {
+  const router = useRouter();
   const firstPhoto = memory.media.find((m) => m.type === "photo");
   const extraCount = memory.media.length - 1;
   const isEdited = memory.updated_at !== memory.created_at;
@@ -39,13 +65,25 @@ export function MemoryCard({ memory }: MemoryCardProps) {
 
             {/* Content */}
             <div className="min-w-0 flex-1">
-              <p className="line-clamp-3 text-sm">{memory.content}</p>
+              <p className="line-clamp-3 text-sm">
+                {highlightText(memory.content, highlightQuery)}
+              </p>
               {memory.tags.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {memory.tags.map((tag) => (
-                    <Badge key={tag.id} variant="secondary" className="text-xs">
-                      {tag.name}
-                    </Badge>
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        router.push(`/dashboard?tag=${tag.id}`);
+                      }}
+                    >
+                      <Badge variant="secondary" className="cursor-pointer text-xs hover:bg-secondary/80">
+                        {tag.name}
+                      </Badge>
+                    </button>
                   ))}
                 </div>
               )}

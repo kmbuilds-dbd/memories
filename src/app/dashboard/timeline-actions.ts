@@ -2,12 +2,13 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import type { MemoryPage, MemoryPreview } from "@/types";
+import type { MemoryFilters, MemoryPage, MemoryPreview } from "@/types";
 
 const PAGE_SIZE = 20;
 
 export async function loadMemories(
-  cursor?: string
+  cursor?: string,
+  filters?: MemoryFilters
 ): Promise<MemoryPage> {
   const supabase = await createClient();
 
@@ -20,15 +21,33 @@ export async function loadMemories(
     return { memories: [], nextCursor: null };
   }
 
+  const isTagFiltered = !!filters?.tagId;
+
+  // When filtering by tag, use inner join to only get matching memories
+  const selectStr = isTagFiltered
+    ? "id, content, created_at, updated_at, memory_tags!inner(tag_id, tags(id, name)), media(id, type, storage_path)"
+    : "id, content, created_at, updated_at, memory_tags(tags(id, name)), media(id, type, storage_path)";
+
   let query = supabase
     .from("memories")
-    .select(
-      "id, content, created_at, updated_at, memory_tags(tags(id, name)), media(id, type, storage_path)"
-    )
+    .select(selectStr)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(PAGE_SIZE + 1);
+
+  // Full-text search filter
+  if (filters?.query) {
+    query = query.textSearch("search_vector", filters.query, {
+      type: "websearch",
+      config: "english",
+    });
+  }
+
+  // Tag filter
+  if (isTagFiltered) {
+    query = query.eq("memory_tags.tag_id", filters.tagId);
+  }
 
   if (cursor) {
     const [cursorDate, cursorId] = cursor.split("|");
@@ -47,13 +66,36 @@ export async function loadMemories(
   const hasMore = rows.length > PAGE_SIZE;
   const slice = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
 
+  // When tag-filtered with inner join, the join strips non-matching tags.
+  // Fetch all tags for returned memories in a supplementary query.
+  let tagsByMemoryId: Map<string, { id: string; name: string }[]> | null = null;
+  if (isTagFiltered && slice.length > 0) {
+    const memoryIds = slice.map((r) => r.id as string);
+    const { data: allMemoryTags } = await supabase
+      .from("memory_tags")
+      .select("memory_id, tags(id, name)")
+      .in("memory_id", memoryIds);
+    if (allMemoryTags) {
+      tagsByMemoryId = new Map();
+      for (const mt of allMemoryTags) {
+        const tag = (mt as unknown as { memory_id: string; tags: { id: string; name: string } }).tags;
+        const memId = mt.memory_id as string;
+        if (tag) {
+          if (!tagsByMemoryId.has(memId)) tagsByMemoryId.set(memId, []);
+          tagsByMemoryId.get(memId)!.push(tag);
+        }
+      }
+    }
+  }
+
   // Collect all media storage paths for batch signing
   const allMedia: { rowIndex: number; mediaIndex: number; path: string }[] = [];
   const parsedRows = slice.map((row, rowIndex) => {
-    const tags =
-      (row.memory_tags as unknown as { tags: { id: string; name: string } }[])
-        ?.map((mt) => mt.tags)
-        .filter(Boolean) ?? [];
+    const tags = tagsByMemoryId
+      ? tagsByMemoryId.get(row.id as string) ?? []
+      : (row.memory_tags as unknown as { tags: { id: string; name: string } }[])
+          ?.map((mt) => mt.tags)
+          .filter(Boolean) ?? [];
 
     const media =
       (row.media as { id: string; type: "photo" | "video"; storage_path: string }[]) ?? [];

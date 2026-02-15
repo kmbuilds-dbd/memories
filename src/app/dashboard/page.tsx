@@ -2,15 +2,33 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Tags } from "lucide-react";
 import { loadMemories } from "@/app/dashboard/timeline-actions";
+import { fetchUserTags } from "@/app/dashboard/capture/tag-actions";
 import { Timeline } from "@/components/Timeline";
+import { SearchBar } from "@/components/SearchBar";
+import { TagFilter } from "@/components/TagFilter";
+import type { MemoryFilters } from "@/types";
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams: Promise<{ q?: string; tag?: string }>;
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  const { q, tag } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { memories, nextCursor } = await loadMemories();
+  const filters: MemoryFilters = {};
+  if (q) filters.query = q;
+  if (tag) filters.tagId = tag;
+  const hasFilters = !!q || !!tag;
+
+  const [{ memories, nextCursor }, tags] = await Promise.all([
+    loadMemories(undefined, filters),
+    fetchUserTags(),
+  ]);
+
   const hasMemories = memories.length > 0;
 
   return (
@@ -22,16 +40,48 @@ export default async function DashboardPage() {
             Welcome back{user?.email ? `, ${user.email}` : ""}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/capture">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Memory
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/tags">
+              <Tags className="mr-2 h-4 w-4" />
+              Tags
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/dashboard/capture">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Memory
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="mb-6 space-y-3">
+        <SearchBar />
+        <TagFilter tags={tags} />
       </div>
 
       {hasMemories ? (
-        <Timeline initialMemories={memories} initialCursor={nextCursor} />
+        <Timeline
+          initialMemories={memories}
+          initialCursor={nextCursor}
+          filters={filters}
+          highlightQuery={q}
+        />
+      ) : hasFilters ? (
+        <Card className="border-dashed">
+          <CardHeader className="text-center">
+            <CardTitle>No matching memories</CardTitle>
+            <CardDescription>
+              Try adjusting your search or removing filters
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button variant="outline" asChild>
+              <Link href="/dashboard">Clear filters</Link>
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <Card className="border-dashed">
           <CardHeader className="text-center">

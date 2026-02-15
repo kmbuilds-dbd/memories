@@ -6,31 +6,39 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MemoryCard } from "@/components/MemoryCard";
 import { loadMemories } from "@/app/dashboard/timeline-actions";
-import type { MemoryPreview } from "@/types";
+import type { MemoryFilters, MemoryPreview } from "@/types";
 
 interface TimelineProps {
   initialMemories: MemoryPreview[];
   initialCursor: string | null;
+  filters?: MemoryFilters;
+  highlightQuery?: string;
 }
 
-export function Timeline({ initialMemories, initialCursor }: TimelineProps) {
+export function Timeline({ initialMemories, initialCursor, filters, highlightQuery }: TimelineProps) {
   const [memories, setMemories] = useState(initialMemories);
   const [cursor, setCursor] = useState(initialCursor);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshing, startRefreshTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Reset when server re-renders with new filters
+  useEffect(() => {
+    setMemories(initialMemories);
+    setCursor(initialCursor);
+  }, [initialMemories, initialCursor]);
+
   const fetchMore = useCallback(async () => {
     if (!cursor || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const page = await loadMemories(cursor);
+      const page = await loadMemories(cursor, filters);
       setMemories((prev) => [...prev, ...page.memories]);
       setCursor(page.nextCursor);
     } finally {
       setIsLoadingMore(false);
     }
-  }, [cursor, isLoadingMore]);
+  }, [cursor, isLoadingMore, filters]);
 
   // IntersectionObserver for infinite scroll
   useEffect(() => {
@@ -52,7 +60,7 @@ export function Timeline({ initialMemories, initialCursor }: TimelineProps) {
 
   const handleRefresh = () => {
     startRefreshTransition(async () => {
-      const page = await loadMemories();
+      const page = await loadMemories(undefined, filters);
       setMemories(page.memories);
       setCursor(page.nextCursor);
     });
@@ -76,7 +84,7 @@ export function Timeline({ initialMemories, initialCursor }: TimelineProps) {
 
       <div className="space-y-4">
         {memories.map((memory) => (
-          <MemoryCard key={memory.id} memory={memory} />
+          <MemoryCard key={memory.id} memory={memory} highlightQuery={highlightQuery} />
         ))}
       </div>
 

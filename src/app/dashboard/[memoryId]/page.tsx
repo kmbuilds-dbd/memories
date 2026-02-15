@@ -111,9 +111,11 @@ export default async function MemoryDetailPage({ params }: MemoryDetailPageProps
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {tags.map((tag) => (
-              <Badge key={tag.id} variant="secondary">
-                {tag.name}
-              </Badge>
+              <Link key={tag.id} href={`/dashboard?tag=${tag.id}`}>
+                <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
+                  {tag.name}
+                </Badge>
+              </Link>
             ))}
           </div>
         )}
