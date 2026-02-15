@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
@@ -22,9 +23,17 @@ export function Navbar() {
           <Link href="/dashboard" className="text-xl font-bold">
             Memories
           </Link>
-          <Button variant="ghost" onClick={handleSignOut}>
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm">
+              <Link href="/dashboard/capture">
+                <Plus className="mr-1.5 h-4 w-4" />
+                New Memory
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
     </nav>
