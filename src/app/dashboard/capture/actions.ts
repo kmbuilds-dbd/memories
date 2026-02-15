@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { generateEmbedding } from "@/lib/openai";
 import type { CreateMemoryInput, CreateMemoryResult } from "@/types";
 
 export async function createMemory(
@@ -77,6 +78,17 @@ export async function createMemory(
       storage_path: media.storagePath,
       display_order: media.displayOrder,
     });
+  }
+
+  // Generate embedding (non-blocking — failure must not block memory creation)
+  try {
+    const embedding = await generateEmbedding(content);
+    await supabase
+      .from("memories")
+      .update({ embedding: JSON.stringify(embedding) })
+      .eq("id", memory.id);
+  } catch {
+    // Embedding failure is non-critical
   }
 
   revalidatePath("/dashboard");

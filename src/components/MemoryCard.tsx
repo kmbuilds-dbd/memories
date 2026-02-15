@@ -11,6 +11,7 @@ import type { MemoryPreview } from "@/types";
 interface MemoryCardProps {
   memory: MemoryPreview;
   highlightQuery?: string;
+  similarity?: number;
 }
 
 function highlightText(text: string, query?: string) {
@@ -36,7 +37,7 @@ function highlightText(text: string, query?: string) {
   );
 }
 
-export function MemoryCard({ memory, highlightQuery }: MemoryCardProps) {
+export function MemoryCard({ memory, highlightQuery, similarity }: MemoryCardProps) {
   const router = useRouter();
   const firstPhoto = memory.media.find((m) => m.type === "photo");
   const extraCount = memory.media.length - 1;
@@ -90,16 +91,23 @@ export function MemoryCard({ memory, highlightQuery }: MemoryCardProps) {
                   ))}
                 </div>
               )}
-              <p className="mt-2 text-xs text-muted-foreground">
-                {new Date(memory.created_at).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-                {isEdited && (
-                  <span className="ml-2 italic">Edited</span>
+              <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                <span>
+                  {new Date(memory.created_at).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                  {isEdited && (
+                    <span className="ml-2 italic">Edited</span>
+                  )}
+                </span>
+                {similarity != null && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    {Math.round(similarity * 100)}% match
+                  </Badge>
                 )}
-              </p>
+              </div>
             </div>
           </div>
         </CardContent>

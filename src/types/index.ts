@@ -90,8 +90,74 @@ export interface MemoryPage {
 export interface MemoryFilters {
   query?: string;
   tagId?: string;
+  mode?: "keyword" | "semantic";
 }
 
 export interface TagWithCount extends Tag {
   memory_count: number;
+}
+
+// Phase 6: Calendar, Stats, Year in Review
+
+export interface CalendarDay {
+  date: string;
+  count: number;
+}
+
+export interface CalendarMonth {
+  year: number;
+  month: number;
+  days: CalendarDay[];
+}
+
+export interface UserStats {
+  totalMemories: number;
+  totalMedia: number;
+  memoriesThisMonth: number;
+  memoriesThisWeek: number;
+  currentStreak: number;
+  longestStreak: number;
+  topTags: { name: string; count: number }[];
+  firstMemoryDate: string | null;
+  averagePerWeek: number;
+}
+
+export interface YearInReviewMonth {
+  month: number;
+  monthName: string;
+  memoryCount: number;
+  memories: MemoryPreview[];
+}
+
+export interface YearInReview {
+  year: number;
+  totalMemories: number;
+  totalMedia: number;
+  topTags: { name: string; count: number }[];
+  months: YearInReviewMonth[];
+  availableYears: number[];
+}
+
+// Phase 7: AI Semantic Search + Tag Discovery
+
+export interface SemanticSearchResult extends MemoryPreview {
+  similarity: number;
+}
+
+export interface TagSuggestion {
+  memoryId: string;
+  memoryContentPreview: string;
+  suggestedTags: string[];
+  reasoning: string;
+}
+
+export interface TagDiscoveryResult {
+  suggestions: TagSuggestion[];
+  newTagIdeas: { name: string; description: string }[];
+}
+
+export interface EmbeddingStatus {
+  totalMemories: number;
+  embeddedCount: number;
+  unembeddedCount: number;
 }
