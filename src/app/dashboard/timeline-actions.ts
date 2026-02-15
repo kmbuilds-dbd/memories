@@ -47,7 +47,9 @@ export async function loadMemories(
   const hasMore = rows.length > PAGE_SIZE;
   const slice = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
 
-  const memories: MemoryPreview[] = slice.map((row) => {
+  // Collect all media storage paths for batch signing
+  const allMedia: { rowIndex: number; mediaIndex: number; path: string }[] = [];
+  const parsedRows = slice.map((row, rowIndex) => {
     const tags =
       (row.memory_tags as unknown as { tags: { id: string; name: string } }[])
         ?.map((mt) => mt.tags)
@@ -56,14 +58,37 @@ export async function loadMemories(
     const media =
       (row.media as { id: string; type: "photo" | "video"; storage_path: string }[]) ?? [];
 
-    return {
-      id: row.id as string,
-      content: row.content as string,
-      created_at: row.created_at as string,
-      tags,
-      media,
-    };
+    media.forEach((m, mediaIndex) => {
+      allMedia.push({ rowIndex, mediaIndex, path: m.storage_path });
+    });
+
+    return { row, tags, media };
   });
+
+  // Sign all URLs in one batch
+  const signedUrlMap = new Map<string, string>();
+  if (allMedia.length > 0) {
+    const paths = allMedia.map((m) => m.path);
+    const { data: signed } = await supabase.storage
+      .from("media")
+      .createSignedUrls(paths, 3600);
+    if (signed) {
+      signed.forEach((s, i) => {
+        if (s.signedUrl) signedUrlMap.set(allMedia[i].path, s.signedUrl);
+      });
+    }
+  }
+
+  const memories: MemoryPreview[] = parsedRows.map(({ row, tags, media }) => ({
+    id: row.id as string,
+    content: row.content as string,
+    created_at: row.created_at as string,
+    tags,
+    media: media.map((m) => ({
+      ...m,
+      url: signedUrlMap.get(m.storage_path) || "",
+    })),
+  }));
 
   let nextCursor: string | null = null;
   if (hasMore && memories.length > 0) {

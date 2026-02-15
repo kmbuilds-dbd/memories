@@ -70,6 +70,7 @@ export interface ExistingMedia {
   id: string;
   type: "photo" | "video";
   storagePath: string;
+  url: string;
 }
 
 export interface MemoryPreview {
@@ -77,7 +78,7 @@ export interface MemoryPreview {
   content: string;
   created_at: string;
   tags: { id: string; name: string }[];
-  media: { id: string; type: "photo" | "video"; storage_path: string }[];
+  media: { id: string; type: "photo" | "video"; storage_path: string; url: string }[];
 }
 
 export interface MemoryPage {

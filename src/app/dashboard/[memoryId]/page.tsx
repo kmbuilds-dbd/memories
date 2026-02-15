@@ -37,9 +37,24 @@ export default async function MemoryDetailPage({ params }: MemoryDetailPageProps
       ?.map((mt) => mt.tags)
       .filter(Boolean) ?? [];
 
-  const media = (
+  const rawMedia = (
     (memory.media as { id: string; type: "photo" | "video"; storage_path: string; display_order: number }[]) ?? []
   ).sort((a, b) => a.display_order - b.display_order);
+
+  // Generate signed URLs for private storage bucket
+  let media = rawMedia.map((m) => ({ ...m, url: "" }));
+  if (rawMedia.length > 0) {
+    const paths = rawMedia.map((m) => m.storage_path);
+    const { data: signed } = await supabase.storage
+      .from("media")
+      .createSignedUrls(paths, 3600);
+    if (signed) {
+      media = rawMedia.map((m, i) => ({
+        ...m,
+        url: signed[i]?.signedUrl || "",
+      }));
+    }
+  }
 
   const createdDate = new Date(memory.created_at as string);
 

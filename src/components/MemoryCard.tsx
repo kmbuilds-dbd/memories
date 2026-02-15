@@ -11,7 +11,6 @@ interface MemoryCardProps {
 }
 
 export function MemoryCard({ memory }: MemoryCardProps) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const firstPhoto = memory.media.find((m) => m.type === "photo");
   const extraCount = memory.media.length - 1;
 
@@ -24,7 +23,7 @@ export function MemoryCard({ memory }: MemoryCardProps) {
             {firstPhoto && (
               <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
                 <img
-                  src={`${supabaseUrl}/storage/v1/object/public/media/${firstPhoto.storage_path}`}
+                  src={firstPhoto.url}
                   alt=""
                   className="h-full w-full object-cover"
                 />

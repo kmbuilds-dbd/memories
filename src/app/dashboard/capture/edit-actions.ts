@@ -34,14 +34,30 @@ export async function fetchMemory(memoryId: string) {
       ?.map((mt) => mt.tags)
       .filter(Boolean) ?? [];
 
-  const media: ExistingMedia[] =
-    (memory.media as { id: string; type: "photo" | "video"; storage_path: string }[])?.map(
-      (m) => ({
+  const rawMedia =
+    (memory.media as { id: string; type: "photo" | "video"; storage_path: string }[]) ?? [];
+
+  // Generate signed URLs for private storage bucket
+  let media: ExistingMedia[] = rawMedia.map((m) => ({
+    id: m.id,
+    type: m.type,
+    storagePath: m.storage_path,
+    url: "",
+  }));
+  if (rawMedia.length > 0) {
+    const paths = rawMedia.map((m) => m.storage_path);
+    const { data: signed } = await supabase.storage
+      .from("media")
+      .createSignedUrls(paths, 3600);
+    if (signed) {
+      media = rawMedia.map((m, i) => ({
         id: m.id,
         type: m.type,
         storagePath: m.storage_path,
-      })
-    ) ?? [];
+        url: signed[i]?.signedUrl || "",
+      }));
+    }
+  }
 
   return {
     id: memory.id as string,

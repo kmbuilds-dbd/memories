@@ -210,16 +210,12 @@ function ExistingMediaThumb({
   media: ExistingMedia;
   onRemove: () => void;
 }) {
-  // Build the public URL for the existing media
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publicUrl = `${supabaseUrl}/storage/v1/object/public/media/${media.storagePath}`;
-
   return (
     <div className="group relative aspect-square overflow-hidden rounded-lg bg-muted">
       {media.type === "photo" ? (
-        <img src={publicUrl} alt="" className="h-full w-full object-cover" />
+        <img src={media.url} alt="" className="h-full w-full object-cover" />
       ) : (
-        <video src={publicUrl} className="h-full w-full object-cover" muted />
+        <video src={media.url} className="h-full w-full object-cover" muted />
       )}
       <button
         type="button"
