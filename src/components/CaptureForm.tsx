@@ -116,7 +116,7 @@ export function CaptureForm({ initialData }: CaptureFormProps) {
 
         if (result.success) {
           toast.success("Memory updated!");
-          router.push("/dashboard");
+          router.push(`/dashboard/${initialData.memoryId}`);
         } else {
           toast.error(result.error || "Failed to update memory");
         }
