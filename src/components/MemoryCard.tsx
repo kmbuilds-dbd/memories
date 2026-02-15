@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Image as ImageIcon } from "lucide-react";
@@ -49,10 +50,12 @@ export function MemoryCard({ memory, highlightQuery }: MemoryCardProps) {
             {/* Thumbnail */}
             {firstPhoto && (
               <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-muted">
-                <img
+                <Image
                   src={firstPhoto.url}
                   alt=""
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="80px"
+                  className="object-cover"
                 />
                 {extraCount > 0 && (
                   <div className="absolute bottom-0.5 right-0.5 flex items-center gap-0.5 rounded bg-black/70 px-1 py-0.5 text-[10px] font-medium text-white">

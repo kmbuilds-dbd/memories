@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Play } from "lucide-react";
 import { MediaLightbox } from "@/components/MediaLightbox";
 
@@ -43,10 +44,12 @@ export function MemoryDetailMedia({ media }: MemoryDetailMediaProps) {
             className="group relative aspect-square overflow-hidden rounded-lg bg-muted"
           >
             {m.type === "photo" ? (
-              <img
+              <Image
                 src={m.url}
                 alt=""
-                className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                fill
+                sizes="(min-width: 640px) 33vw, 50vw"
+                className="object-cover transition-transform group-hover:scale-105"
               />
             ) : (
               <>

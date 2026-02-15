@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Memories
 
-## Getting Started
+A personal time capsule PWA for capturing, organizing, and rediscovering moments.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Framework:** Next.js (App Router, TypeScript)
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Backend:** Supabase (PostgreSQL, Auth, Storage)
+- **Search:** PostgreSQL full-text search
+- **PWA:** next-pwa with offline support
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Email/password and Google authentication
+- Create memories with text, photos, and videos
+- Chronological timeline with infinite scroll
+- Full-text search and tag-based filtering
+- Tag management (create, rename, delete)
+- Media lightbox with swipe navigation
+- Dark mode (system, light, dark)
+- Installable PWA
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. Clone the repo and install dependencies:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Copy `.env.local.example` to `.env.local` and fill in your Supabase credentials:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   cp .env.local.example .env.local
+   ```
 
-## Deploy on Vercel
+3. Run the development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Open [http://localhost:3000](http://localhost:3000).

@@ -11,6 +11,14 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   // Empty turbopack config to acknowledge webpack plugin usage
   turbopack: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "ivhpbucigkvxiboyyhky.supabase.co",
+      },
+    ],
+  },
 };
 
 export default withPWA(nextConfig);
