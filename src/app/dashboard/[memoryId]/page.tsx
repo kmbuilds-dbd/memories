@@ -57,6 +57,8 @@ export default async function MemoryDetailPage({ params }: MemoryDetailPageProps
   }
 
   const createdDate = new Date(memory.created_at as string);
+  const isEdited = (memory.updated_at as string) !== (memory.created_at as string);
+  const updatedDate = isEdited ? new Date(memory.updated_at as string) : null;
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
@@ -85,6 +87,16 @@ export default async function MemoryDetailPage({ params }: MemoryDetailPageProps
               minute: "2-digit",
             })}
           </p>
+          {updatedDate && (
+            <p className="mt-1 text-sm italic text-muted-foreground">
+              Edited on{" "}
+              {updatedDate.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          )}
         </div>
 
         {/* Content */}

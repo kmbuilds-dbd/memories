@@ -23,7 +23,7 @@ export async function loadMemories(
   let query = supabase
     .from("memories")
     .select(
-      "id, content, created_at, memory_tags(tags(id, name)), media(id, type, storage_path)"
+      "id, content, created_at, updated_at, memory_tags(tags(id, name)), media(id, type, storage_path)"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -83,6 +83,7 @@ export async function loadMemories(
     id: row.id as string,
     content: row.content as string,
     created_at: row.created_at as string,
+    updated_at: row.updated_at as string,
     tags,
     media: media.map((m) => ({
       ...m,

@@ -77,6 +77,7 @@ export interface MemoryPreview {
   id: string;
   content: string;
   created_at: string;
+  updated_at: string;
   tags: { id: string; name: string }[];
   media: { id: string; type: "photo" | "video"; storage_path: string; url: string }[];
 }

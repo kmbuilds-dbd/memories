@@ -13,6 +13,7 @@ interface MemoryCardProps {
 export function MemoryCard({ memory }: MemoryCardProps) {
   const firstPhoto = memory.media.find((m) => m.type === "photo");
   const extraCount = memory.media.length - 1;
+  const isEdited = memory.updated_at !== memory.created_at;
 
   return (
     <Link href={`/dashboard/${memory.id}`} className="block">
@@ -54,6 +55,9 @@ export function MemoryCard({ memory }: MemoryCardProps) {
                   month: "long",
                   day: "numeric",
                 })}
+                {isEdited && (
+                  <span className="ml-2 italic">Edited</span>
+                )}
               </p>
             </div>
           </div>
