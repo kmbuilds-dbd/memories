@@ -36,12 +36,9 @@ export async function loadMemories(
     .order("id", { ascending: false })
     .limit(PAGE_SIZE + 1);
 
-  // Full-text search filter
+  // Fuzzy search filter (substring matching)
   if (filters?.query) {
-    query = query.textSearch("search_vector", filters.query, {
-      type: "websearch",
-      config: "english",
-    });
+    query = query.ilike("content", `%${filters.query}%`);
   }
 
   // Tag filter
