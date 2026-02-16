@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getEmbeddingStatus } from "@/app/dashboard/settings/actions";
+import { getEmbeddingStatus, getAISettings } from "@/app/dashboard/settings/actions";
+import { isAIConfigured } from "@/lib/ai/provider";
 import { EmbeddingManager } from "./embedding-manager";
+import { AIProviderSettings } from "./ai-provider-settings";
 
 export default async function SettingsPage() {
-  const status = await getEmbeddingStatus();
+  const [status, aiSettings, aiConfigured] = await Promise.all([
+    getEmbeddingStatus(),
+    getAISettings(),
+    isAIConfigured(),
+  ]);
+
+  const hasServerKey = !!process.env.OPENAI_API_KEY;
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
@@ -18,7 +26,13 @@ export default async function SettingsPage() {
 
       <h1 className="mb-8 text-3xl font-bold">Settings</h1>
 
-      <EmbeddingManager initialStatus={status} />
+      <div className="space-y-6">
+        <AIProviderSettings
+          initialSettings={aiSettings}
+          hasServerKey={hasServerKey}
+        />
+        <EmbeddingManager initialStatus={status} aiConfigured={aiConfigured} />
+      </div>
     </main>
   );
 }

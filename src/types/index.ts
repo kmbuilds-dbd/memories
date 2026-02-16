@@ -161,3 +161,14 @@ export interface EmbeddingStatus {
   embeddedCount: number;
   unembeddedCount: number;
 }
+
+export interface UserAISettings {
+  id: string;
+  user_id: string;
+  provider: 'openai' | 'ollama' | null;
+  openai_api_key: string | null;
+  ollama_base_url: string | null;
+  ollama_embedding_model: string | null;
+  ollama_chat_model: string | null;
+  embedding_dimensions: number;
+}

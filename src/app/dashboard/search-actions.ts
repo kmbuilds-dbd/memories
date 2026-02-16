@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { generateEmbedding } from "@/lib/openai";
+import { getAIProvider } from "@/lib/ai/provider";
 import type { SemanticSearchResult } from "@/types";
 
 export async function semanticSearch(
@@ -17,7 +17,9 @@ export async function semanticSearch(
   if (authError || !user) return [];
 
   // Generate embedding for the query
-  const queryEmbedding = await generateEmbedding(query);
+  const provider = await getAIProvider();
+  if (!provider) return [];
+  const queryEmbedding = await provider.embedding.generateEmbedding(query);
 
   // Call the match_memories RPC
   const { data: matches, error } = await supabase.rpc("match_memories", {

@@ -6,6 +6,7 @@ import { Calendar, Plus, Tags } from "lucide-react";
 import { loadMemories } from "@/app/dashboard/timeline-actions";
 import { semanticSearch } from "@/app/dashboard/search-actions";
 import { fetchUserTags } from "@/app/dashboard/capture/tag-actions";
+import { isAIConfigured } from "@/lib/ai/provider";
 import { Timeline } from "@/components/Timeline";
 import { SearchBar } from "@/components/SearchBar";
 import { TagFilter } from "@/components/TagFilter";
@@ -33,7 +34,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   let memories: Awaited<ReturnType<typeof loadMemories>>["memories"] = [];
   let nextCursor: string | null = null;
 
-  const tags = await fetchUserTags();
+  const [tags, aiEnabled] = await Promise.all([
+    fetchUserTags(),
+    isAIConfigured(),
+  ]);
 
   if (isSemantic) {
     semanticResults = await semanticSearch(q);
@@ -79,7 +83,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </div>
 
       <div className="mb-6 space-y-3">
-        <SearchBar />
+        <SearchBar aiEnabled={aiEnabled} />
         <TagFilter tags={tags} />
       </div>
 

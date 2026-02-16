@@ -13,7 +13,11 @@ import {
 } from "@/app/dashboard/tags/ai-actions";
 import type { TagDiscoveryResult, TagSuggestion } from "@/types";
 
-export function TagDiscovery() {
+interface TagDiscoveryProps {
+  aiEnabled?: boolean;
+}
+
+export function TagDiscovery({ aiEnabled = false }: TagDiscoveryProps) {
   const [result, setResult] = useState<TagDiscoveryResult | null>(null);
   const [isAnalyzing, startAnalysis] = useTransition();
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
@@ -51,6 +55,16 @@ export function TagDiscovery() {
   const visibleSuggestions = result?.suggestions.filter(
     (s) => !dismissedIds.has(s.memoryId) && !appliedIds.has(s.memoryId)
   );
+
+  if (!aiEnabled) {
+    return (
+      <Card className="border-dashed">
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          Configure an AI provider in Settings to use AI tag discovery.
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">

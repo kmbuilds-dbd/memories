@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { generateEmbedding } from "@/lib/openai";
+import { generateEmbeddingForUser } from "@/lib/ai/provider";
 import type {
   UpdateMemoryInput,
   CreateMemoryResult,
@@ -204,11 +204,13 @@ export async function updateMemory(
 
   // Re-generate embedding after content update
   try {
-    const embedding = await generateEmbedding(content);
-    await supabase
-      .from("memories")
-      .update({ embedding: JSON.stringify(embedding) })
-      .eq("id", input.memoryId);
+    const embedding = await generateEmbeddingForUser(content);
+    if (embedding) {
+      await supabase
+        .from("memories")
+        .update({ embedding: JSON.stringify(embedding) })
+        .eq("id", input.memoryId);
+    }
   } catch {
     // Embedding failure is non-critical
   }

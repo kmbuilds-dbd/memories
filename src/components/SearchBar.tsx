@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Sparkles, X } from "lucide-react";
 
-export function SearchBar() {
+interface SearchBarProps {
+  aiEnabled?: boolean;
+}
+
+export function SearchBar({ aiEnabled = false }: SearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentQuery = searchParams.get("q") ?? "";
@@ -92,14 +96,16 @@ export function SearchBar() {
           </button>
         )}
       </div>
-      <Button
-        variant={semantic ? "default" : "outline"}
-        size="icon"
-        onClick={toggleSemantic}
-        title={semantic ? "Switch to keyword search" : "Switch to AI semantic search"}
-      >
-        <Sparkles className="h-4 w-4" />
-      </Button>
+      {aiEnabled && (
+        <Button
+          variant={semantic ? "default" : "outline"}
+          size="icon"
+          onClick={toggleSemantic}
+          title={semantic ? "Switch to keyword search" : "Switch to AI semantic search"}
+        >
+          <Sparkles className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 }

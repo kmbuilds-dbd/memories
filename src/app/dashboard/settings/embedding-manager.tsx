@@ -9,9 +9,10 @@ import type { EmbeddingStatus } from "@/types";
 
 interface EmbeddingManagerProps {
   initialStatus: EmbeddingStatus;
+  aiConfigured: boolean;
 }
 
-export function EmbeddingManager({ initialStatus }: EmbeddingManagerProps) {
+export function EmbeddingManager({ initialStatus, aiConfigured }: EmbeddingManagerProps) {
   const [status, setStatus] = useState(initialStatus);
   const [isRunning, setIsRunning] = useState(false);
   const [lastProcessed, setLastProcessed] = useState(0);
@@ -58,6 +59,11 @@ export function EmbeddingManager({ initialStatus }: EmbeddingManagerProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {!aiConfigured && (
+          <p className="text-sm text-muted-foreground">
+            Configure an AI provider above to enable semantic search.
+          </p>
+        )}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span>

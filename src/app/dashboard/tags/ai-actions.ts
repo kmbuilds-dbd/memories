@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getOpenAIClient } from "@/lib/openai";
+import { getAIProvider } from "@/lib/ai/provider";
 import type { TagDiscoveryResult } from "@/types";
 
 export async function discoverTags(
@@ -62,6 +62,11 @@ async function analyzeWithAI(
   userId: string,
   rows: { id: unknown; content: unknown; memory_tags?: unknown }[]
 ): Promise<TagDiscoveryResult> {
+  const provider = await getAIProvider();
+  if (!provider) {
+    return { suggestions: [], newTagIdeas: [] };
+  }
+
   // Get existing tags for context
   const { data: existingTags } = await supabase
     .from("tags")
@@ -75,10 +80,7 @@ async function analyzeWithAI(
     content: (r.content as string).slice(0, 300),
   }));
 
-  const openai = getOpenAIClient();
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
+  const content = await provider.chat.chatCompletion({
     temperature: 0.3,
     response_format: { type: "json_object" },
     messages: [
@@ -116,7 +118,6 @@ Tag names should be lowercase, 1-3 words, and descriptive of themes, emotions, a
     ],
   });
 
-  const content = response.choices[0]?.message?.content;
   if (!content) {
     return { suggestions: [], newTagIdeas: [] };
   }
