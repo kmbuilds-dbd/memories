@@ -74,15 +74,16 @@ export function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md shadow-sm">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">
-          {mode === "login" ? "Welcome back" : "Create an account"}
+        <p className="font-display italic text-xl text-center mb-2">Memories</p>
+        <CardTitle className="text-xl font-semibold text-center">
+          {mode === "login" ? "Welcome back" : "Create your journal"}
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-center font-body">
           {mode === "login"
-            ? "Enter your credentials to access your memories"
-            : "Enter your email to create your account"}
+            ? "Sign in to revisit your memories"
+            : "Start capturing the moments that matter"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
