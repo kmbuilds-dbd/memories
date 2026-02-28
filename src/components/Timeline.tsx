@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { MemoryCard } from "@/components/MemoryCard";
 import { loadMemories } from "@/app/dashboard/timeline-actions";
 import type { MemoryFilters, MemoryPreview } from "@/types";
@@ -82,23 +81,45 @@ export function Timeline({ initialMemories, initialCursor, filters, highlightQue
         </Button>
       </div>
 
-      <div className="space-y-4">
-        {memories.map((memory) => (
-          <MemoryCard key={memory.id} memory={memory} highlightQuery={highlightQuery} />
-        ))}
+      {/* Memory list with date separators */}
+      <div className="space-y-3">
+        {memories.map((memory, index) => {
+          const currentMonth = new Date(memory.created_at).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+          });
+          const prevMonth = index > 0
+            ? new Date(memories[index - 1].created_at).toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+              })
+            : null;
+          const showSeparator = index === 0 || currentMonth !== prevMonth;
+
+          return (
+            <div key={memory.id}>
+              {showSeparator && (
+                <p className="text-xs text-muted-foreground uppercase tracking-wider pt-4 pb-2 first:pt-0">
+                  {currentMonth}
+                </p>
+              )}
+              <MemoryCard memory={memory} highlightQuery={highlightQuery} />
+            </div>
+          );
+        })}
       </div>
 
       {/* Loading skeletons */}
       {isLoadingMore && (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-lg border p-6">
+            <div key={i} className="rounded-xl bg-card p-6 shadow-sm">
               <div className="flex gap-4">
-                <Skeleton className="h-20 w-20 shrink-0 rounded-md" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/4" />
+                <div className="h-20 w-20 shrink-0 rounded-lg bg-muted animate-pulse" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-3 w-full rounded bg-muted animate-pulse" />
+                  <div className="h-3 w-3/4 rounded bg-muted animate-pulse" />
+                  <div className="h-2 w-1/4 rounded bg-muted animate-pulse" />
                 </div>
               </div>
             </div>
@@ -111,8 +132,8 @@ export function Timeline({ initialMemories, initialCursor, filters, highlightQue
 
       {/* End of list */}
       {!cursor && memories.length > 0 && (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          Beginning of your memories
+        <p className="py-10 text-center text-sm text-muted-foreground font-body italic">
+          The beginning of your story
         </p>
       )}
     </div>
