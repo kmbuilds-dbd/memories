@@ -1,98 +1,86 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import {
-  BookOpen,
-  Calendar,
-  Flame,
-  Image as ImageIcon,
-  TrendingUp,
-  Trophy,
-} from "lucide-react";
 import type { UserStats } from "@/types";
 
 interface StatsGridProps {
   stats: UserStats;
 }
 
-type NumericStatKey = "totalMemories" | "totalMedia" | "memoriesThisMonth" | "memoriesThisWeek" | "currentStreak" | "longestStreak" | "averagePerWeek";
-
-const statCards: {
-  key: NumericStatKey;
-  label: string;
-  icon: typeof BookOpen;
-  suffix?: string;
-}[] = [
-  { key: "totalMemories", label: "Total Memories", icon: BookOpen },
-  { key: "memoriesThisMonth", label: "This Month", icon: Calendar },
-  { key: "memoriesThisWeek", label: "This Week", icon: TrendingUp },
-  { key: "currentStreak", label: "Current Streak", icon: Flame, suffix: " days" },
-  { key: "longestStreak", label: "Longest Streak", icon: Trophy, suffix: " days" },
-  { key: "totalMedia", label: "Total Media", icon: ImageIcon },
-];
-
 export function StatsGrid({ stats }: StatsGridProps) {
+  const since = stats.firstMemoryDate
+    ? new Date(stats.firstMemoryDate).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {statCards.map(({ key, label, icon: Icon, suffix }) => (
-          <Card key={key}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {label}
-              </CardTitle>
-              <Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats[key]}
-                {suffix ?? ""}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {stats.topTags.length > 0 && (
-        <>
-          <Separator />
-          <div>
-            <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-              Top Tags This Year
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {stats.topTags.map((tag) => (
-                <Badge key={tag.name} variant="secondary" className="text-sm">
-                  {tag.name}{" "}
-                  <span className="ml-1 text-muted-foreground">({tag.count})</span>
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      <Separator />
-
-      <div className="text-sm text-muted-foreground">
+    <div className="space-y-8 max-w-lg">
+      {/* Main narrative */}
+      <div className="font-body text-base leading-relaxed space-y-4">
         <p>
-          Average <span className="font-medium text-foreground">{stats.averagePerWeek}</span> memories per week
+          You&apos;ve captured{" "}
+          <span className="font-semibold text-foreground">{stats.totalMemories} memories</span>
+          {since && (
+            <>
+              {" "}since{" "}
+              <span className="font-semibold text-foreground">{since}</span>
+            </>
+          )}
+          . That&apos;s about{" "}
+          <span className="font-semibold text-foreground">{stats.averagePerWeek} per week</span>.
         </p>
-        {stats.firstMemoryDate && (
-          <p className="mt-1">
-            Since{" "}
-            <span className="font-medium text-foreground">
-              {new Date(stats.firstMemoryDate).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
+
+        {stats.longestStreak > 0 && (
+          <p>
+            Your longest streak was{" "}
+            <span className="font-semibold text-foreground">{stats.longestStreak} days</span>.
+            {stats.currentStreak > 0 && (
+              <>
+                {" "}Right now you&apos;re on a{" "}
+                <span className="font-semibold text-foreground">
+                  {stats.currentStreak}-day streak
+                </span>
+                .
+              </>
+            )}
           </p>
         )}
+
+        <p>
+          This month:{" "}
+          <span className="font-semibold text-foreground">{stats.memoriesThisMonth} memories</span>.
+          {" "}This week:{" "}
+          <span className="font-semibold text-foreground">{stats.memoriesThisWeek}</span>.
+          {stats.totalMedia > 0 && (
+            <>
+              {" "}You&apos;ve attached{" "}
+              <span className="font-semibold text-foreground">{stats.totalMedia} photos and videos</span>.
+            </>
+          )}
+        </p>
       </div>
+
+      {/* Top tags */}
+      {stats.topTags.length > 0 && (
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">
+            Most used tags
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {stats.topTags.map((tag) => (
+              <span
+                key={tag.name}
+                className="text-sm px-3 py-1 rounded-full bg-secondary text-foreground"
+              >
+                {tag.name}
+                <span className="ml-1.5 text-muted-foreground">{tag.count}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
