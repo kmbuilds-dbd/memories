@@ -24,7 +24,7 @@ export default async function SettingsPage() {
         Back to memories
       </Link>
 
-      <h1 className="mb-8 text-3xl font-bold">Settings</h1>
+      <h1 className="mb-8 font-display text-3xl">Settings</h1>
 
       <div className="space-y-6">
         <AIProviderSettings

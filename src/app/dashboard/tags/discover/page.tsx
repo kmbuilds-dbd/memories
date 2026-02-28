@@ -16,7 +16,7 @@ export default async function TagDiscoverPage() {
         Back to tags
       </Link>
 
-      <h1 className="mb-8 text-3xl font-bold">AI Tag Discovery</h1>
+      <h1 className="mb-8 font-display text-3xl">AI Tag Discovery</h1>
 
       <TagDiscovery aiEnabled={aiEnabled} />
     </main>

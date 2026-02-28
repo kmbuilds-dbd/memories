@@ -25,7 +25,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
         Back to memories
       </Link>
 
-      <h1 className="mb-8 text-3xl font-bold">Calendar</h1>
+      <h1 className="mb-8 font-display text-3xl">Calendar</h1>
 
       <CalendarView initialData={data} />
     </main>
