@@ -152,9 +152,9 @@ export function CaptureForm({ initialData }: CaptureFormProps) {
           id="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Write about this moment..."
-          rows={5}
-          className="resize-none"
+          placeholder="What made this moment matter?"
+          rows={6}
+          className="resize-none font-body text-base leading-relaxed bg-card"
         />
       </div>
 
@@ -178,7 +178,7 @@ export function CaptureForm({ initialData }: CaptureFormProps) {
 
       <TagInput tags={tagNames} onChange={setTagNames} />
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-3 pt-4">
         <Button
           variant="outline"
           onClick={() => router.push("/dashboard")}
