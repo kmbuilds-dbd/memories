@@ -1,8 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -46,41 +44,37 @@ export function YearReview({ data }: YearReviewProps) {
         </Select>
       )}
 
-      {/* Summary header */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-6 text-center">
-            <div>
-              <p className="text-2xl font-bold">{data.totalMemories}</p>
-              <p className="text-sm text-muted-foreground">Memories</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{data.totalMedia}</p>
-              <p className="text-sm text-muted-foreground">Media</p>
-            </div>
-          </div>
-          {data.topTags.length > 0 && (
-            <div className="mt-4">
-              <p className="mb-2 text-sm text-muted-foreground">Top Tags</p>
-              <div className="flex flex-wrap gap-1">
-                {data.topTags.map((tag) => (
-                  <Badge key={tag.name} variant="secondary" className="text-xs">
-                    {tag.name} ({tag.count})
-                  </Badge>
-                ))}
-              </div>
-            </div>
+      {/* Summary */}
+      <div className="font-body text-base leading-relaxed">
+        <p>
+          In {data.year}, you captured{" "}
+          <span className="font-semibold">{data.totalMemories} memories</span>
+          {data.totalMedia > 0 && (
+            <>
+              {" "}with{" "}
+              <span className="font-semibold">{data.totalMedia} photos and videos</span>
+            </>
           )}
-        </CardContent>
-      </Card>
+          .
+        </p>
+        {data.topTags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {data.topTags.map((tag) => (
+              <span key={tag.name} className="text-xs px-2.5 py-1 rounded-full bg-secondary text-muted-foreground">
+                {tag.name} ({tag.count})
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Months */}
       {data.months.map((month) => (
         <div key={month.month}>
           <Separator className="mb-4" />
           <div className="mb-3 flex items-baseline justify-between">
-            <h3 className="text-lg font-semibold">{month.monthName}</h3>
-            <span className="text-sm text-muted-foreground">
+            <h3 className="font-display text-lg">{month.monthName}</h3>
+            <span className="text-xs text-muted-foreground">
               {month.memoryCount} {month.memoryCount === 1 ? "memory" : "memories"}
             </span>
           </div>
