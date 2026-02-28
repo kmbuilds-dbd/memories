@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { MemoryDetailMedia } from "@/components/MemoryDetailMedia";
@@ -61,46 +60,46 @@ export default async function MemoryDetailPage({ params }: MemoryDetailPageProps
   const updatedDate = isEdited ? new Date(memory.updated_at as string) : null;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       {/* Back link */}
       <Link
         href="/dashboard"
-        className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+        className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
-        <ArrowLeft className="mr-1 h-4 w-4" />
-        Back to memories
+        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+        Back
       </Link>
 
-      <article className="space-y-6">
-        {/* Date */}
+      <article className="space-y-8">
+        {/* Date header — journal entry stamp */}
         <div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground tracking-wide">
             {createdDate.toLocaleDateString(undefined, {
               weekday: "long",
               year: "numeric",
               month: "long",
               day: "numeric",
-            })}{" "}
-            at{" "}
-            {createdDate.toLocaleTimeString(undefined, {
-              hour: "numeric",
-              minute: "2-digit",
             })}
+            <span className="ml-2 opacity-60">
+              {createdDate.toLocaleTimeString(undefined, {
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
           </p>
           {updatedDate && (
-            <p className="mt-1 text-sm italic text-muted-foreground">
-              Edited on{" "}
-              {updatedDate.toLocaleDateString(undefined, {
-                year: "numeric",
+            <p className="mt-1 text-xs italic text-muted-foreground opacity-60">
+              Edited {updatedDate.toLocaleDateString(undefined, {
                 month: "long",
                 day: "numeric",
+                year: "numeric",
               })}
             </p>
           )}
         </div>
 
-        {/* Content */}
-        <div className="whitespace-pre-wrap text-base leading-relaxed">
+        {/* Content — the hero */}
+        <div className="font-body text-lg leading-[1.8] whitespace-pre-wrap max-w-[65ch]">
           {memory.content as string}
         </div>
 
@@ -109,22 +108,24 @@ export default async function MemoryDetailPage({ params }: MemoryDetailPageProps
 
         {/* Tags */}
         {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
-              <Link key={tag.id} href={`/dashboard?tag=${tag.id}`}>
-                <Badge variant="secondary" className="cursor-pointer hover:bg-secondary/80">
-                  {tag.name}
-                </Badge>
+              <Link
+                key={tag.id}
+                href={`/dashboard?tag=${tag.id}`}
+                className="text-xs px-2.5 py-1 rounded-full bg-secondary text-muted-foreground hover:bg-accent transition-colors"
+              >
+                {tag.name}
               </Link>
             ))}
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex gap-3 border-t pt-6">
-          <Button variant="outline" asChild>
+        {/* Actions — recessed */}
+        <div className="flex gap-3 pt-4 border-t border-border/50">
+          <Button variant="ghost" size="sm" asChild>
             <Link href={`/dashboard/${memoryId}/edit`}>
-              <Pencil className="mr-2 h-4 w-4" />
+              <Pencil className="mr-1.5 h-3.5 w-3.5" />
               Edit
             </Link>
           </Button>
