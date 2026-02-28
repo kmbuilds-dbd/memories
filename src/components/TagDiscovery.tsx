@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Check, Loader2, Sparkles, X } from "lucide-react";
+import { Check, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   discoverTags,
@@ -76,9 +76,7 @@ export function TagDiscovery({ aiEnabled = false }: TagDiscoveryProps) {
         >
           {isAnalyzing ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="mr-2 h-4 w-4" />
-          )}
+          ) : null}
           Analyze Untagged
         </Button>
         <Button
@@ -88,9 +86,7 @@ export function TagDiscovery({ aiEnabled = false }: TagDiscoveryProps) {
         >
           {isAnalyzing ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="mr-2 h-4 w-4" />
-          )}
+          ) : null}
           Analyze All
         </Button>
       </div>

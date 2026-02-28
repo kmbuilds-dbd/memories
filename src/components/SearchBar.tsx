@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 interface SearchBarProps {
   aiEnabled?: boolean;
@@ -99,11 +99,12 @@ export function SearchBar({ aiEnabled = false }: SearchBarProps) {
       {aiEnabled && (
         <Button
           variant={semantic ? "default" : "outline"}
-          size="icon"
+          size="sm"
           onClick={toggleSemantic}
           title={semantic ? "Switch to keyword search" : "Switch to AI semantic search"}
+          className="text-xs px-3"
         >
-          <Sparkles className="h-4 w-4" />
+          AI
         </Button>
       )}
     </div>
