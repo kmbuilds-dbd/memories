@@ -20,13 +20,13 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Memories",
+  title: "Memorandom",
   description: "Your personal time capsule - capture, organize, and rediscover moments",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Memories",
+    title: "Memorandom",
   },
 };
 

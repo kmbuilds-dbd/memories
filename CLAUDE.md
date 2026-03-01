@@ -1,71 +1,117 @@
-# Memories App
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What This Is
-Memories is a personal time capsule PWA — a single place to capture, organize, and rediscover moments, stories, and experiences. It is a private, personal app with no social features. Designed for two moments: the moment of capture (fast, frictionless) and the moment of rediscovery (emotionally rich, easy to browse).
+
+Memories is a personal time capsule PWA — capture, organize, and rediscover moments. Private, no social features. Designed for two moments: fast frictionless capture and emotionally rich rediscovery.
+
+## Commands
+
+```bash
+npm run dev          # Start dev server (Turbopack)
+npm run build        # Production build — run this to verify changes compile
+npm run start        # Production server (binds 0.0.0.0:$PORT for Railway)
+npm run lint         # ESLint
+```
+
+No test suite exists yet.
 
 ## Tech Stack
-- **Framework:** Next.js 14+ (App Router, TypeScript)
-- **Styling:** shadcn/ui + Tailwind CSS
-- **Backend/Database:** Supabase (PostgreSQL)
-- **Auth:** Supabase Auth (email/password + Google + Apple sign-in)
-- **Media Storage:** Supabase Storage (S3-compatible)
-- **Search:** PostgreSQL Full-Text Search
-- **State:** React Server Components + Zustand for client state
-- **PWA:** next-pwa
-- **Hosting:** Railway or local
 
-## Supabase
-- Project URL: https://ivhpbucigkvxiboyyhky.supabase.co
-- Credentials stored in .env.local (never commit these)
+- **Next.js 16** (App Router, React 19, TypeScript 5)
+- **Tailwind CSS 4** + shadcn/ui + Radix UI
+- **Supabase** — PostgreSQL, Auth (email + Google + Apple), Storage (S3-compatible)
+- **AI** — OpenAI API or Ollama (optional, user-configured BYOK)
+- **PWA** via next-pwa, deployed on **Railway**
 
-## Key Documentation
-- `memories-build-plan.md` — Full technical build plan with data model, architecture, and phased implementation
-- `memories-product-brief.md` — Product vision, features, design principles
+## Architecture
 
-## Build Phases
-1. **Phase 1: Foundation** — Project setup, auth, database schema, app shell
-2. **Phase 2: Capture Flow** — Create memories with text, photos/videos, tags
-3. **Phase 3: Timeline** — Chronological browsing, memory detail view, edit/delete
-4. **Phase 4: Search and Tags** — Full-text search, tag browsing, combined filtering
-5. **Phase 5: Polish** — UI polish, dark mode, PWA enhancements, Railway deployment, GitHub README
+### Route Structure
 
-## Core Design Rules
-- Capture timestamp is immutable — set automatically, never backdated
-- Tags are fully user-controlled — no auto-tagging
-- All tables use Supabase RLS — users can only access their own data
-- Capture flow placeholder prompt: "What made this moment matter?"
-- MVP uses PostgreSQL full-text search only — AI/semantic search comes later
+All authenticated pages live under `/dashboard` (protected by middleware). The landing page, `/login`, and `/signup` are public.
+
+```
+src/app/
+├── page.tsx                    # Landing page (custom fonts: Inter + Outfit)
+├── login/ & signup/            # Auth pages using AuthForm component
+├── auth/callback/route.ts      # OAuth code exchange → redirect
+└── dashboard/                  # Protected — requires auth
+    ├── page.tsx                # Timeline (infinite scroll, cursor pagination)
+    ├── capture/                # Create memory
+    ├── [memoryId]/             # Detail view + /edit
+    ├── calendar/               # Calendar view
+    ├── stats/                  # User statistics
+    ├── review/                 # Year in Review
+    ├── tags/ + tags/discover/  # Tag management + AI suggestions
+    └── settings/               # AI provider config, embeddings
+```
+
+### Server Actions Pattern
+
+Data mutations use **co-located server actions** (`actions.ts` files inside route folders). Each action creates a Supabase server client, performs the operation, and calls `revalidatePath()`. Client components call these actions directly.
+
+Key action files:
+- `dashboard/capture/actions.ts` — createMemory
+- `dashboard/capture/edit-actions.ts` — updateMemory, fetchMemory
+- `dashboard/timeline-actions.ts` — loadMemories (cursor-paginated), deleteMemory
+- `dashboard/search-actions.ts` — semanticSearch
+- `dashboard/tags/ai-actions.ts` — AI tag suggestions
+
+### Supabase Auth Flow
+
+```
+Request → middleware.ts → lib/supabase/middleware.ts (updateSession)
+  ├── Refreshes session cookies
+  ├── /dashboard/* without auth → redirect /login
+  └── /login or /signup with auth → redirect /dashboard
+```
+
+Two Supabase clients:
+- `lib/supabase/client.ts` — browser client (`createBrowserClient`) for "use client" components
+- `lib/supabase/server.ts` — server client (`createServerClient`) for server actions/components
+
+The OAuth callback at `/auth/callback` reads `x-forwarded-host` headers to build the redirect URL correctly behind Railway's proxy.
+
+### AI Provider Abstraction
+
+`lib/ai/` contains a provider factory pattern:
+- `provider.ts` — `getAIProvider()` returns OpenAI or Ollama based on user settings
+- AI is fully optional — the app degrades gracefully without it
+- Embeddings stored in `embedding` column, searched via `match_memories` RPC
+- Users configure their own API keys in `/dashboard/settings` (BYOK model)
+
+### Media Upload Flow
+
+Client-side: compress images via `browser-image-compression` → upload to Supabase Storage → store path in `media` table. Files go to `media` bucket at path `${userId}/${uuid}.${ext}`. Server generates 1-hour signed URLs for display.
 
 ## Database Tables
-- `memories` — id, user_id, content, created_at (immutable), updated_at, search_vector
+
+All tables use RLS — users can only access their own data.
+
+- `memories` — id, user_id, content, created_at (immutable), updated_at, search_vector, embedding
 - `media` — id, memory_id, user_id, type (photo/video), storage_path, thumbnail_path, display_order
 - `tags` — id, user_id, name (unique per user)
 - `memory_tags` — memory_id, tag_id (join table)
+- `user_ai_settings` — user_id, provider, api_key, base_url, model configs
 
-## Design Context
+## Core Design Rules
 
-### Users
-A single person using Memories as their private journal — capturing moments throughout the day (on mobile, in the moment) and revisiting them later (on any device, relaxed browsing). The user cares about their memories deeply. This is not a task; it's a ritual. They may write a quick line with a photo at a coffee shop, or sit down in the evening to reflect on a meaningful day. The interface must respect both modes.
+- Capture timestamp (`created_at`) is immutable — set automatically, never backdated
+- Tags are fully user-controlled — no auto-tagging (AI suggestions are opt-in)
+- `@/*` path alias maps to `./src/*`
+- Landing page uses its own fonts (Inter body, Outfit headings); app interior uses Geist
+- The `NEXT_PUBLIC_*` env vars are baked in at build time — Railway must have them set before building
 
-### Brand Personality
-**Warm, intimate, unhurried.** Like sitting in a comfortable chair with a leather-bound journal and good light. The app should feel personal and precious — not clinical, not performative, not trendy. It should feel like it was made by someone who cares about the same things you care about.
+## Environment Variables
 
-### Aesthetic Direction
-- **Tone:** Warm & intimate. Day One is the closest reference — clean journal feel, focus on the writing, warm without being saccharine.
-- **Color palette:** Warm neutrals — cream, amber, warm grays. Think aged paper, candlelight, soft natural tones. Not sterile white. Not cold gray. The palette should feel like it has warmth baked in, even in dark mode (warm darks, not pure black).
-- **Typography:** Needs character and warmth. Avoid generic system fonts (Inter, Roboto, Arial, Geist). Choose a distinctive serif or humanist sans for body text that feels like reading a journal. Pair with a display font for headings that has personality without being loud.
-- **Texture & depth:** The interface should have subtle atmosphere — not flat white/gray backgrounds everywhere. Consider warm tints, subtle grain, gentle shadows, or paper-like textures where appropriate.
-- **Motion:** Gentle and purposeful. Smooth transitions, subtle reveals. Nothing bouncy or attention-seeking. Motion should feel like turning a page, not like a notification.
-- **Dark mode:** Warm darks — deep warm browns/charcoals, not pure black. The warm palette should carry through.
+```
+NEXT_PUBLIC_SUPABASE_URL      # Supabase project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY # Supabase anonymous key
+OPENAI_API_KEY                # Optional — server-side fallback for AI features
+```
 
-### Anti-References (What This Must NOT Look Like)
-1. **Not a social media app** — No feed vibes, no engagement metrics, no notification badges, no like counts. This is private.
-2. **Not a productivity tool** — No dashboards, no KPI grids, no hero-metric cards with icons. This is not Notion, Linear, or an admin panel.
-3. **Not a generic SaaS template** — No default shadcn look. No "built with AI" aesthetic (gradient text, sparkle icons, purple-on-white). Every component must be intentionally styled, not left at defaults.
+## Key Documentation
 
-### Design Principles
-1. **The writing is the hero.** Typography, spacing, and layout should make the written content feel precious and readable. Everything else (chrome, navigation, metadata) recedes.
-2. **Warmth over polish.** Choose imperfect and human over sterile and perfect. A warm color, a soft shadow, a textured background — these details make the difference between "software" and "my journal."
-3. **Earn every element.** If a component is on screen, it has a reason. No decorative icons, no filler cards, no metrics for metrics' sake. Simplicity is the luxury.
-4. **Two speeds, one soul.** Capture mode is fast and minimal (phone, one hand, 30 seconds). Rediscovery mode is rich and immersive (lean back, browse, feel). Both must feel like the same app.
-5. **Never generic.** Every design choice — font, color, spacing, animation — should feel intentional and specific to a memories app. If it could work equally well on a banking app or a todo list, it's not specific enough.
+- `memories-build-plan.md` — Full technical build plan with data model and phased implementation
+- `memories-product-brief.md` — Product vision, features, design principles

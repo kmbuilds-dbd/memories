@@ -51,7 +51,7 @@ export function Navbar() {
         <div className="flex h-14 items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/dashboard" className="font-display italic text-lg text-foreground">
-              Memories
+              Memorandom
             </Link>
             {/* Desktop nav links */}
             <div className="hidden items-center gap-1 sm:flex">

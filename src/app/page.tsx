@@ -7,7 +7,7 @@ export default function Home() {
       {/* Header */}
       <header className="shrink-0 pt-10 px-6 sm:px-10 flex items-center justify-between max-w-3xl mx-auto w-full">
         <span className="font-display italic text-2xl text-foreground">
-          Memories
+          Memorandom
         </span>
         <Link
           href="/login"

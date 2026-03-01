@@ -76,7 +76,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <Card className="w-full max-w-md shadow-sm">
       <CardHeader className="space-y-1">
-        <p className="font-display italic text-xl text-center mb-2">Memories</p>
+        <p className="font-display italic text-xl text-center mb-2">Memorandom</p>
         <CardTitle className="text-xl font-semibold text-center">
           {mode === "login" ? "Welcome back" : "Create your journal"}
         </CardTitle>
